@@ -1,144 +1,191 @@
+// Include important C++ libraries here
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <iostream>
 #include <sstream>
-#include <cstdlib>
-#include <vector>
-
-using namespace std;
 using namespace sf;
+using namespace std;
 
-int main() {
-	// open a window
-	VideoMode vm(1920, 1080);
-	RenderWindow window(vm, "CHAOS GAME", Style::Fullscreen);
-	RectangleShape rectangle;
-
+int main()
+{
+	float width = sf::VideoMode::getDesktopMode().width;
+	float height = sf::VideoMode::getDesktopMode().height;
+	width = 800; height = 600;
+	// Create a video mode object
+	VideoMode vm(width, height);
+	// Create and open a window for the game
+	RenderWindow window(vm, "Chaos Game!!", Style::Default);
 	vector<Vector2f> vertices;
 	vector<Vector2f> points;
 
-	window.clear();
+	Font f;
+	if (!f.loadFromFile("KOMIKAP_.ttf")) cout << "failed to load font..." << endl;
+	Text instructions;
+	instructions.setFont(f);
+	instructions.setCharacterSize(24);
+	instructions.setFillColor(Color::Green);
 
-	while (window.isOpen()) {
+	int c1_x;
+	int c1_y;
+	int c2_x;
+	int c2_y;
+	int c3_x;
+	int c3_y;
+	int pt4_x;
+	int pt4_y;
+	int count = 0;
 
-		Event event;
-
-		if (Keyboard::isKeyPressed(Keyboard::Escape)) {
-			window.close();
-		}
-		Font font;																				//display text in window
-	if (!font.loadFromFile("res/fonts/Dirtyboy-BxYl.ttf"))									//checks to see if font file is in project directory
+	while (window.isOpen())
 	{
-		cout << "Error loading file" << endl;												//outputs error message in console if font file is not found
-		system("pause");
-	}
-	Text text;																				//game title
-	text.setFont(font);
-	text.setString("Chaos Game!");
-	text.setCharacterSize(256);
-	text.setFillColor(Color::Red);
-	text.setStyle(Text::Style::Bold | Text::Style::Underlined);
-	text.setOutlineColor(Color::Yellow);
-	text.setOutlineThickness(10);
-	text.setPosition(300, 1);
-		
-
-		while (window.pollEvent(event)) // first loop that gets inputs
+		/*
+		****************************************
+		Handle the players input
+		****************************************
+		*/
+		Event event;
+		while (window.pollEvent(event))
 		{
 			if (event.type == Event::Closed)
 			{
 				window.close();
 			}
-
-			if (event.type == Event::MouseButtonPressed)
+			if (event.type == sf::Event::MouseButtonPressed)
 			{
-				if (event.mouseButton.button == Mouse::Left)
+				if (event.mouseButton.button == sf::Mouse::Left)
 				{
-					cout << "the right button was pressed" << endl;
-					cout << "mouse x: " << event.mouseButton.x << endl;
-					cout << "mouse y: " << event.mouseButton.y << endl;
 
-					if (vertices.size() < 3)
+					if (count <= 3)
 					{
-						vertices.push_back(Vector2f(event.mouseButton.x, event.mouseButton.y));
+						std::cout << "the right button was pressed" << std::endl;
+						std::cout << "mouse x: " << event.mouseButton.x << std::endl;
+						std::cout << "mouse y: " << event.mouseButton.y << std::endl;
+						vertices.push_back({ (float)event.mouseButton.x, (float)event.mouseButton.y });
+						if (count == 0)
+						{
+							c1_x = vertices.at(0).x;
+							c1_y = vertices.at(0).y;
+							count++;
+						}
+						else if (count == 1)
+						{
+							c2_x = vertices.at(1).x;
+							c2_y = vertices.at(1).y;
+							count++;
+						}
+						else if (count == 2)
+						{
+							c3_x = vertices.at(2).x;
+							c3_y = vertices.at(2).y;
+							count++;
+						}
+						else if (count == 3)
+						{
+							pt4_x = vertices.at(3).x;
+							pt4_y = vertices.at(3).y;
+							count++;
+						}
+
 					}
-					else if (points.size() == 0)
-					{
-						//fourth click
-						points.push_back(Vector2f(event.mouseButton.x, event.mouseButton.y));
-					}
+
+
+
+
 				}
 			}
+
 		}
-
-		RectangleShape rect(Vector2f(10, 10));
-		rect.setPosition(event.mouseButton.x, event.mouseButton.y);
-		rect.setFillColor(Color::Magenta);
-
-		int midpoint_x, midpoint_y;
-		int vert_select = rand() % 3;
-
-
-
-		if (points.size() > 0)
+		// Handle the player quitting
+		if (Keyboard::isKeyPressed(Keyboard::Escape))
 		{
-			//generate more points
-			//select random vertex
-			//calculate midpoints between random vertex and the last point in the vector
-			//push back to the newly generated coord.
-
-
-			midpoint_x = (points[points.size() - 1].x + vertices[vert_select].x) /2;
-			midpoint_y = (points[points.size() - 1].y + vertices[vert_select].y) /2;
-
-			cout << "points size: " << points.size() << endl;
-			cout << "points x: " << points[points.size() - 1].x << endl;
-			cout << "points y: " << points[points.size() - 1].y << endl;
-			cout << "vertices x: " << vertices[vert_select].x << endl;
-			cout << "vertices y: " << vertices[vert_select].y << endl;
-			
-			cout << "midpoint x: " << midpoint_x << endl;
-			cout << "midpoint y: " << midpoint_y << endl << endl;
-			
-			points.push_back(Vector2f(midpoint_x, midpoint_y));
-
+			window.close();
 		}
 
+		/*****************************************
+			Update the scene
+		*****************************************/
+		//generate interior points
 
-		switch (event.type) {
+		ostringstream oss;
+		oss << "Click stuff and \n" << "I will write stuff";
+		instructions.setString(oss.str());
 
-			// creates ther pixel dot where the buttons are clicked
-		case Event::MouseButtonPressed:
-			rect.setSize(Vector2f(10, 10));
-			rect.setPosition(event.mouseButton.x, event.mouseButton.y);
-			break;
-		}
+		FloatRect textRect = instructions.getLocalBounds();
+		instructions.setOrigin(textRect.left +
+			textRect.width / 2.0f,
+			textRect.top +
+			textRect.height / 2.0f);
+
+		instructions.setPosition(width / 2, 50);
+
+		/*
+		****************************************
+		Draw the scene
+		****************************************
+		*/
+
+		// Clear everything from the last run frame
+		//window.clear();
+
+		// Draw our game scene here
+		//RectangleShape r{ Vector2f{4,4} }; ///width, height.  Center uninitialized
+
+		CircleShape r(2);
+		r.setFillColor(Color::Magenta);
+
+		int randNum;
 
 
-		/// its for the first 4 dot inputs
-		/// second vector goes here for the points that get put in for the
-		/// triangle now we have a while loop that goes through with the
-		/// algorithm and draw a triangle
 
-		
-		for (int i = 0; i < vertices.size(); i++)
+		for (size_t i = 0; i < vertices.size(); i++)
 		{
-			RectangleShape rect(Vector2f(5, 5));
-			rect.setPosition(Vector2f(vertices[i].x, vertices[i].y));
-			rect.setFillColor(Color::Blue);
-			window.draw(rect);
+
+			r.setPosition(Vector2f{ vertices.at(i).x, vertices.at(i).y });
+			//cout << "Current point is " << vertices.at(i).x << ", " << vertices.at(i).y << "." << endl;
+			window.draw(r);
+
 		}
 
-		for (int i = 0; i < points.size(); i++)
+		if (vertices.size() == 4)
 		{
-			RectangleShape rect(Vector2f(2, 2));
-			rect.setPosition(Vector2f(points[i].x, points[i].y));
-			rect.setFillColor(Color::Red);
-			window.draw(rect);
+
+			randNum = rand() % 3;
+			if (randNum == 0)
+			{
+
+				r.setPosition(Vector2f{ float(pt4_x + c1_x) / 2, float(pt4_y + c1_y) / 2 });
+				pt4_x = (pt4_x + c1_x) / 2;
+				pt4_y = (pt4_y + c1_y) / 2;
+				window.draw(r);
+			}
+			else if (randNum == 1)
+			{
+				r.setPosition(Vector2f{ float(pt4_x + c2_x) / 2, float(pt4_y + c2_y) / 2 });
+				pt4_x = (pt4_x + c2_x) / 2;
+				pt4_y = (pt4_y + c2_y) / 2;
+				window.draw(r);
+			}
+			else if (randNum == 2)
+			{
+				r.setPosition(Vector2f{ float(pt4_x + c3_x) / 2, float(pt4_y + c3_y) / 2 });
+				pt4_x = (pt4_x + c3_x) / 2;
+				pt4_y = (pt4_y + c3_y) / 2;
+				window.draw(r);
+			}
+
+
+
 		}
 
-		// Show everything that we drew
+
+
+
+		window.draw(instructions);
+		// Show everything we just drew
 		window.display();
+
+
+
+
 	}
 
 	return 0;
